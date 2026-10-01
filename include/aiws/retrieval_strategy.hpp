@@ -14,16 +14,13 @@ namespace aiws {
 // const qualification, and namespace unchanged.
 class RetrievalStrategy {
 public:
-    // TODO: make destruction safe through a base-class pointer.
-    ~RetrievalStrategy() = default;
+    virtual ~RetrievalStrategy() = default;
 
-    // TODO: make this a required polymorphic operation.
-    virtual std::vector<SearchResult> search(const std::string&,
-                                             int,
-                                             const std::vector<Chunk>&,
-                                             const CorpusIndex&) const {
-        return {};
-    }
+    virtual std::vector<SearchResult> search(
+        const std::string&,
+        int,
+        const std::vector<Chunk>&,
+        const CorpusIndex&) const = 0;
 };
 
 }  // namespace aiws
