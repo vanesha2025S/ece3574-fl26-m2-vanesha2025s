@@ -1,10 +1,10 @@
-Start testing: Oct 02 04:44 UTC
+Start testing: Oct 02 04:50 UTC
 ----------------------------------------------------------
 1/2 Testing: public_tests
 1/2 Test: public_tests
 Command: "/mnt/build/public_tests"
 Directory: /mnt/build
-"public_tests" start time: Oct 02 04:44 UTC
+"public_tests" start time: Oct 02 04:50 UTC
 Output:
 ----------------------------------------------------------
 M2 public tests passed
@@ -12,7 +12,7 @@ M2 public tests passed
 Test time =   0.02 sec
 ----------------------------------------------------------
 Test Passed.
-"public_tests" end time: Oct 02 04:44 UTC
+"public_tests" end time: Oct 02 04:50 UTC
 "public_tests" time elapsed: 00:00:00
 ----------------------------------------------------------
 
@@ -20,15 +20,16 @@ Test Passed.
 2/2 Test: student_tests
 Command: "/mnt/build/student_tests"
 Directory: /mnt/build
-"student_tests" start time: Oct 02 04:44 UTC
+"student_tests" start time: Oct 02 04:50 UTC
 Output:
 ----------------------------------------------------------
+student tests passed
 <end of output>
-Test time =   0.03 sec
+Test time =   0.01 sec
 ----------------------------------------------------------
 Test Passed.
-"student_tests" end time: Oct 02 04:44 UTC
+"student_tests" end time: Oct 02 04:50 UTC
 "student_tests" time elapsed: 00:00:00
 ----------------------------------------------------------
 
-End testing: Oct 02 04:44 UTC
+End testing: Oct 02 04:50 UTC
