@@ -35,71 +35,34 @@ void check(bool ok, const char* name) {
 // custom chunker
 class OneChunk final : public aiws::ChunkingStrategy {
 public:
-    std::vector<aiws::Chunk> chunk(
-        const aiws::Document& d,
-        std::size_t order) const override {
-
-        return {{
-            d.id() + "#custom",
-            d.id(),
-            order,
-            0,
-            "custom chunk",
-            2,
-            0,
-            d.text().size()
-        }};
+    std::vector<aiws::Chunk> chunk(const aiws::Document& d, std::size_t order) const override {
+        return {{d.id() + "#custom", d.id(), order, 0, "custom chunk", 2, 0, d.text().size()}};
     }
 };
 
 // custom retrieval
 class FirstOnly final : public aiws::RetrievalStrategy {
 public:
-    std::vector<aiws::SearchResult> search(
-        const std::string&,
-        int k,
-        const std::vector<aiws::Chunk>& chunks,
-        const aiws::CorpusIndex&) const override {
-
+    std::vector<aiws::SearchResult> search(const std::string&, int k, const std::vector<aiws::Chunk>& chunks, const aiws::CorpusIndex&) const override {
         if (k <= 0 || chunks.empty()) {
             return {};
         }
 
         const auto& c = chunks.front();
-
-        return {{
-            c.id,
-            c.document_id,
-            c.sequence,
-            c.text,
-            99.0,
-            1
-        }};
+        return {{c.id, c.document_id, c.sequence, c.text, 99.0, 1}};
     }
 };
 
 // custom context builder
 class PrefixContext final : public aiws::ContextStrategy {
 public:
-    std::vector<aiws::ContextItem> build(
-        const std::vector<aiws::SearchResult>& ranked,
-        std::size_t budget) const override {
-
+    std::vector<aiws::ContextItem> build(const std::vector<aiws::SearchResult>& ranked, std::size_t budget) const override {
         if (ranked.empty() || budget == 0) {
             return {};
         }
 
         const auto& r = ranked.front();
-
-        return {{
-            r.chunk_id,
-            r.document_id,
-            r.chunk_sequence,
-            "custom",
-            1,
-            r.score,
-            true
-        }};
+        return {{r.chunk_id, r.document_id, r.chunk_sequence, "custom", 1, r.score, true}};
     }
 };
 
@@ -116,64 +79,28 @@ int main() {
     ProcessingCore normal;
     normal.rebuild(ws);
 
-    check(
-        ProcessingCore::normalize("Search... SEARCH!! 42-times")
-            == "search search 42 times",
-        "normalization preserved"
-    );
-
-    check(
-        normal.chunk_count() == 2,
-        "default chunking preserved"
-    );
+    check(ProcessingCore::normalize("Search... SEARCH!! 42-times") == "search search 42 times", "normalization preserved");
+    check(normal.chunk_count() == 2, "default chunking preserved");
 
     auto ranked = normal.search("beta", 2);
-
-    check(
-        ranked.size() == 1 &&
-        ranked[0].document_id == "a",
-        "default retrieval preserved"
-    );
+    check(ranked.size() == 1 && ranked[0].document_id == "a", "default retrieval preserved");
 
     // check custom strategies
     try {
-        ProcessingCore custom(
-            std::make_unique<OneChunk>(),
-            std::make_unique<FirstOnly>(),
-            std::make_unique<PrefixContext>()
-        );
-
+        ProcessingCore custom(std::make_unique<OneChunk>(), std::make_unique<FirstOnly>(), std::make_unique<PrefixContext>());
         custom.rebuild(ws);
 
-        check(
-            custom.chunk_count() == 2,
-            "custom chunker invoked"
-        );
-
-        check(
-            custom.chunks()[0].id == "a#custom",
-            "custom chunk output retained"
-        );
+        check(custom.chunk_count() == 2, "custom chunker invoked");
+        check(custom.chunks()[0].id == "a#custom", "custom chunk output retained");
 
         auto r = custom.search("anything", 1);
-
-        check(
-            r.size() == 1 &&
-            r[0].score == 99.0,
-            "custom retrieval invoked"
-        );
+        check(r.size() == 1 && r[0].score == 99.0, "custom retrieval invoked");
 
         auto c = custom.build_context("anything", 1, 5);
-
-        check(
-            c.size() == 1 &&
-            c[0].text == "custom",
-            "custom context invoked"
-        );
+        check(c.size() == 1 && c[0].text == "custom", "custom context invoked");
     }
     catch (const std::exception& e) {
-        std::cerr << "FAIL: strategy injection threw: "
-                  << e.what() << '\n';
+        std::cerr << "FAIL: strategy injection threw: " << e.what() << '\n';
         ++failures;
     }
 
@@ -181,11 +108,7 @@ int main() {
     bool threw = false;
 
     try {
-        ProcessingCore bad(
-            nullptr,
-            std::make_unique<FirstOnly>(),
-            std::make_unique<PrefixContext>()
-        );
+        ProcessingCore bad(nullptr, std::make_unique<FirstOnly>(), std::make_unique<PrefixContext>());
     }
     catch (const std::invalid_argument&) {
         threw = true;
@@ -193,29 +116,15 @@ int main() {
     catch (...) {
     }
 
-    check(
-        threw,
-        "null strategy rejected"
-    );
+    check(threw, "null strategy rejected");
 
     // check move behavior
-    check(
-        !std::is_copy_constructible_v<ProcessingCore>,
-        "processing core is not copyable"
-    );
-
-    check(
-        std::is_move_constructible_v<ProcessingCore>,
-        "processing core is movable"
-    );
+    check(!std::is_copy_constructible_v<ProcessingCore>, "processing core is not copyable");
+    check(std::is_move_constructible_v<ProcessingCore>, "processing core is movable");
 
     ProcessingCore first;
     ProcessingCore second(std::move(first));
-
-    check(
-        second.chunk_count() == 0,
-        "moved core still works"
-    );
+    check(second.chunk_count() == 0, "moved core still works");
 
     // check failed rebuild keeps old data
     ProcessingCore rebuild_test;
@@ -239,15 +148,8 @@ int main() {
         threw = true;
     }
 
-    check(
-        threw,
-        "duplicate document id rejected"
-    );
-
-    check(
-        rebuild_test.chunk_count() == old_count,
-        "failed rebuild keeps old corpus"
-    );
+    check(threw, "duplicate document id rejected");
+    check(rebuild_test.chunk_count() == old_count, "failed rebuild keeps old corpus");
 
     if (failures) {
         return 1;
