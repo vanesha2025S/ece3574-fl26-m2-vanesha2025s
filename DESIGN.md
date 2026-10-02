@@ -11,9 +11,7 @@ One place runtime polymorphism happens in my code is in ProcessingCore::search()
 
 ## 2. Ownership and lifetime - 1.5 points
 
-In my default constructor, the strategies are created using std::make_unique, like std::make_unique<RetrievalEngine>(). They are passed into the ProcessingCore constructor, checked to make sure they are not null, and then moved into impl_. ProcessingCore::Impl then owns the three strategies using unique_ptrs. This means each strategy only has one owner and is automatically destroyed when ProcessingCore is destroyed.
-
-ProcessingCore is move-only because the strategies have one owner, so they should be moved instead of copied. Moving transfers ownership of them to the new ProcessingCore. The strategy interfaces also need virtual destructors because objects like RetrievalEngine are stored using pointers to their base interfaces. This makes sure the correct derived object is destroyed when it is no longer needed.
+In my default constructor, the strategies are created using std::make_unique, like std::make_unique<RetrievalEngine>(). They are passed into the ProcessingCore constructor, checked to make sure they are not null, and then moved into impl_. ProcessingCore::Impl then owns the three strategies using unique_ptrs. This means each strategy only has one owner and is automatically destroyed when ProcessingCore is destroyed.ProcessingCore is move-only because the strategies have one owner, so they should be moved instead of copied. Moving transfers ownership of them to the new ProcessingCore. The strategy interfaces also need virtual destructors because objects like RetrievalEngine are stored using pointers to their base interfaces. This makes sure the correct derived object is destroyed when it is no longer needed.
 
 ## 3. Architecture, extensibility, and M1 compatibility - 1.5 points
 
